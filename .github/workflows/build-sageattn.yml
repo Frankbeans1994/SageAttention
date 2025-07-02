@@ -9,35 +9,37 @@ on:
         type: string
         default: main
       torch_minor:
-        description: PyTorch minor version
+        description: PyTorch minor version (e.g. '9' for 2.9.x)
         required: true
         type: string
-        default: '7'
+        default: '9'
       torch_patch:
-        description: PyTorch patch version
-        required: true
-        type: string
-        default: '1'
-      torch_is_nightly:
-        description: PyTorch is nightly
+        description: PyTorch patch version (e.g. '0' for 2.9.0)
         required: true
         type: string
         default: '0'
+      torch_is_nightly:
+        description: Is this a nightly Torch build? (1=yes, 0=no)
+        required: true
+        type: string
+        default: '1'
       cuda_minor:
-        description: CUDA minor version
+        description: CUDA minor version (e.g. '8' for 12.8)
         required: true
         type: string
         default: '8'
       cuda_patch:
-        description: CUDA patch version
+        description: CUDA patch version (e.g. '0' for 12.8.0)
         required: true
         type: string
-        default: '1'
+        default: '0'
 
 jobs:
   build-sageattn:
     runs-on: windows-latest
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -53,13 +55,6 @@ jobs:
       - name: Build wheel
         shell: powershell
         run: |
-          # Get-ChildItem Env:
-          # (Get-WmiObject Win32_Processor).Name
-          # (Get-WmiObject Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum / 1GB
-          # (Get-WmiObject Win32_VideoController).Name
-
-          # Get-Command -All python
-          # python --version
           python -m pip install --upgrade pip
           pip install --upgrade cibuildwheel simpleindex
 
@@ -96,7 +91,6 @@ jobs:
             $Env:CIBW_BUILD = "{cp39-win_amd64,cp310-win_amd64,cp311-win_amd64,cp312-win_amd64}"
           }
           $Env:CIBW_BUILD_VERBOSITY = "1"
-          # torch may conflict with cibuildwheel's pinned dependency versions
           $Env:CIBW_DEPENDENCY_VERSIONS = "latest"
           cibuildwheel .
 
